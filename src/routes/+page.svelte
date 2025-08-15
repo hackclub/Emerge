@@ -14,27 +14,7 @@
 	}
 	
 	onMount(() => {
-		/*
-		window.addEventListener("scroll", () => {
-		const scrollTop = window.scrollY;
-		const docHeight = document.body.scrollHeight - window.innerHeight;
-		const scrollPercent = scrollTop / docHeight;
-		//scroll to grow
-		if (scrollPercent < 0.25) {
-			emoji.textContent = "🏜️"; 
-		} else if (scrollPercent < 0.5) {
-			emoji.textContent = "🌱"; 
-		} else if (scrollPercent < 0.75) {
-			emoji.textContent = "🌧️"; 
-		} else {
-			emoji.textContent = "🌳"; 
-		}
-
-		// increment size with scroll
-		emoji.style.fontSize = `${28 + scrollPercent * 20}px`;
-		});
-		const emoji = document.getElementById("emoji");
-		*/
+``
 		// init all the boids
 		boids = Array.from({ length: numBoids }, () => ({
 			x: Math.random() * window.innerWidth,
@@ -138,23 +118,6 @@ a:hover, a:active {
   background-color: white;
 }
 
-.floating-emoji {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background-color: red;
-  color: white;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  transition: font-size 0.3s ease;/* fade in */
-  z-index: 1000;
-}
 
 .submit-button {
   background-color: #ec3750; /* HC red <3 */
@@ -301,14 +264,14 @@ table, th, td {
 <br><br><br><div id="h1"><h1><u><b>Emerge YSWS:</b></u></h1></div>
 <p>The universe is big, beautiful, and <i>probably</i> not simulated, but if anything makes me doubt that, its <b>emergent behaviours.</b><br>Emergent behaviours are systems defined by simple rules that produce intricate and often beautifully complex results. A lot of natures incredible feats can be modelled by just a few easily programmible rules!</p>
 <br>
-<p>The example on this pages title screen is called boids (bird-oid objects), it mimicks the behaviour of flocking birds using only 3 simple rules.
+<p>The example on this page's title screen is called boids (bird-oid objects), it mimicks the behaviour of flocking birds using only 3 simple rules.
 	<br>
-	<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Seperation: Boids steer away from other Boids that get too close
+	<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Seperation: Boids steer away from neighbouring Boids that get too close
 	<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Alignment: Boids try to match the speed and direction of their neighbours
 	<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Cohesion: Boids move toward the center of mass of their neighbours
-	<br><br> from the formation of spots on animals to the language abilities of chatGPT, hundreds of systems excibit emergent behaviours. I've compiled a list of the best on the <a href=https://hackclub.slack.com/archives/C09900Q6873>slack channel</a>. I'd love to see what you can code, and if you write your own implementation of an emergent behaviour, all code that you write will directly help a new forest to #EMERGE. For every tracked 25 minutes you code, the Arbor Day Foundation will plant a tree!
+	<br><br> from the formation of spots on animals to the language abilities of chatGPT, hundreds of systems exhibit emergent behaviours. I've compiled a list of the best on the <a href=https://hackclub.slack.com/archives/C09900Q6873>slack channel</a>. I'd love to see what you can code, and if you write your own implementation of an emergent behaviour, all code that you write will directly help a new forest to #EMERGE. For every tracked 25 minutes you code, the Arbor Day Foundation will plant a tree!
 	 The <a href="https://www.arborday.org/">Arbor Day Foundation</a>, are a fantastic non profit organisation who are going to transform your coding hours into saplings in soil, 
-	  for taking part you will also recieve a (digital) Tree planted certificate and an exclusive "hacking for the planet" status to show off on your slack profile. I&#39;ll also compile a gallery to show all the submissions!<br><br><i style="font-size:0.7rem;">no stickers?? is this even hack club? -shipping out stickers to every participant kinda defeats the point of tree planting T_T, but if you really want the stickers or have a parcel coming anyway, send Euan Ripper a DM on slack and I'll sort you out!</i>  
+	  for taking part you will also recieve a (digital) Tree planted certificate and an exclusive "hacking for the planet" status to show off on your slack profile.  I&#39;ll also compile a gallery to show all the submissions! <br><br>
 	</p>
 
 </div>
@@ -365,7 +328,6 @@ table, th, td {
 				</tr>
 			</tbody>
 	</table>
-	<br>running this as a club activity? see my <a href="https://hc-cdn.hel1.your-objectstorage.com/s/v3/b7fb99fe4502da8c1892e4c184af153c1e2f48f5_image.png">Clubs Workshop</a>
 	
 </div>
 <br><br>
