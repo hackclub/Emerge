@@ -1,6 +1,46 @@
 <script>
 	
+	onMount(() => {
+		const canvas = document.getElementById("gridCanvas");
+		const ctx = canvas.getContext("2d");
+		const rows = 50;
+		const cols = 50;
+		const cellWidth = canvas.width / cols;
+		const cellHeight = canvas.height / rows;
 
+		function drawGrid(highlight = null) {
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			ctx.strokeStyle = "#ddd";
+			for (let i = 0; i < rows; i++) {
+				for (let j = 0; j < cols; j++) {
+					let x = j * cellWidth;
+					let y = i * cellHeight;
+					ctx.strokeRect(x, y, cellWidth, cellHeight);
+				}
+			}
+			if (highlight) {
+				ctx.strokeStyle = "black";
+				ctx.lineWidth = 2;
+				ctx.strokeRect(highlight.x, highlight.y, cellWidth, cellHeight);
+				ctx.lineWidth = 1;
+			}
+		}
+
+		canvas.addEventListener("mousemove", (e) => {
+			const rect = canvas.getBoundingClientRect();
+			const x = e.clientX - rect.left;
+			const y = e.clientY - rect.top;
+			const col = Math.floor(x / cellWidth);
+			const row = Math.floor(y / cellHeight);
+			drawGrid({ x: col * cellWidth, y: row * cellHeight });
+		});
+
+		canvas.addEventListener("mouseleave", () => {
+			drawGrid();
+		});
+
+		drawGrid();
+	});
 
 	import { onMount } from 'svelte';
 
@@ -169,6 +209,7 @@ table, th, td {
 	width: 100%;
 	padding: 2rem;
 	box-sizing: border-box;
+	text-align: center;
 }
 
 	.dot {
@@ -269,9 +310,7 @@ table, th, td {
 	<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Seperation: Boids steer away from neighbouring Boids that get too close
 	<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Alignment: Boids try to match the speed and direction of their neighbours
 	<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Cohesion: Boids move toward the center of mass of their neighbours
-	<br><br> from the formation of spots on animals to the language abilities of chatGPT, hundreds of systems exhibit emergent behaviours. I've compiled a list of the best on the <a href=https://hackclub.slack.com/archives/C09900Q6873>slack channel</a>. I'd love to see what you can code, and if you write your own implementation of an emergent behaviour, all code that you write will directly help a new forest to #EMERGE. For every tracked 25 minutes you code, the Arbor Day Foundation will plant a tree!
-	 The <a href="https://www.arborday.org/">Arbor Day Foundation</a>, are a fantastic non profit organisation who are going to transform your coding hours into saplings in soil, 
-	  for taking part you will also recieve a (digital) Tree planted certificate and an exclusive "hacking for the planet" status to show off on your slack profile.  I&#39;ll also compile a gallery to show all the submissions! <br><br>
+	<br><br> from the formation of spots on animals to the language abilities of chatGPT, hundreds of systems exhibit emergent behaviours. I've compiled a list of the best on the <a href=https://hackclub.slack.com/archives/C09900Q6873>slack channel</a>. If you ship an emergent behaviour, you will get to place pixels (10 X hours tracked on hackatime) on the canvas. As more projects are submitted an <i>"artwork"</i> will #EMERGE. At the end of the event I'll ship everyone the canvas in a poster! 
 	</p>
 
 </div>
@@ -292,31 +331,31 @@ table, th, td {
 				</tr>
 				<tr>
 					<td>Do I need to download anything?</td>
-					<td>You will need to track your hours with Hackatime and install an extension, see <a href="https://hc-cdn.hel1.your-objectstorage.com/s/v3/b7fb99fe4502da8c1892e4c184af153c1e2f48f5_image.png">setup.</a></td>
+					<td>You will need to track your hours with Hackatime and install an extension, see <a href="https://hackatime.hackclub.com/my/wakatime_setup">setup.</a></td>
 				</tr>
 				<tr>
 					<td>Do I need experience?</td>
 					<td>No! This is a great way to learn as someone new to coding, JavaScript, or emergent behaviours.</td>
 				</tr>
 				<tr>
-					<td>How are we planting trees?</td>
-					<td>We’re partnering with <a href="https://www.arborday.org/">The Arbor Day Foundation</a> to put saplings in the ground.</td>
+					<td>Do I have to use p5.js</td>
+					<td>Yes please! I promise it's a small and worthwile learning curve</td>
 				</tr>
 				<tr>
-					<td>Where are the trees going?</td>
-					<td>The Arbor Day Foundation plants trees in schools, neighbourhoods and along streets in the US to improve urban environments as well as regenerating natural forests accross the world, with a particular focus on the Amazon River Basin.</td>
+					<td>When does this end</td>
+					<td>October 20th or when the canvas fills up!</td>
 				</tr>
 				<tr>
 					<td>Is there a minimum hour requirement?</td>
-					<td>A super basic project should take around 20 minutes :)</td>
+					<td>A super basic project could be done in an hour</td>
 				</tr>
 				<tr>
 					<td>Is there a maximum hour requirement?</td>
 					<td>Absolutely not.</td>
 				</tr>
 				<tr>
-					<td>For how long will this run?</td>
-					<td>Until Monday the 8th of September!</td>
+					<td>Where can I ask more questions?</td>
+					<td>DM EuanRipper on slack or join the EMERGE channel</td>
 				</tr>
 				<tr>
 					<td>How is this financed?</td>
@@ -331,6 +370,16 @@ table, th, td {
 	
 </div>
 <br><br>
+</div>
+<div style="background-color: #9bc0de; padding: 2rem; text-align:center;">
+	<canvas id="gridCanvas" width="500" height="500" style="border:1px solid #ccc; display:block; margin:0 auto;"></canvas>
+	<br>
+	<a href="/edit" 
+		style="background-color: #ec3750; color: white; padding: 12px 24px; border-radius: 12px; 
+		       font-weight: bold; font-family: 'Phantom Sans', sans-serif; font-size: 1rem; 
+		       text-decoration: none; display: inline-block; transition: background-color 0.2s ease;">
+		Edit
+	</a>
 </div>
 <div id="gallery" style="background-color: #b7b8ed; padding: 2rem;">
 
@@ -368,7 +417,7 @@ table, th, td {
 	</div>
 </div>
 <div style="text-align: center; padding: 3rem 0; background-color: #d5f2e3;">
-	<p style="font-size: 1.5rem; margin-bottom: 1rem;">Ready to submit?🌳</p>
+	<p style="font-size: 1.5rem; margin-bottom: 1rem;">Ready to submit?</p>
 	<a href="https://airtable.com/appkvgcDqKrSEsojv/pagiSHKTdFhFTfJYY/form" class="submit-button">Submit</a>
 </div>
 
