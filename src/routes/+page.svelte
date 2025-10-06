@@ -480,11 +480,9 @@ table, th, td {
   <div id="canvasContainer" style="max-width: 90%; margin: 0 auto; display: inline-block;">
     <h1 class="canvas-title" style="margin-bottom: 2rem;">The Canvas</h1>
     <canvas id="gridCanvas" width="500" height="500" style="border:1px solid #ccc; display:block; margin:0 auto;"></canvas>
+    <p style="font-size: 1.2rem; margin-top: 2rem; margin-bottom: 1.5rem; color: #333;">when you submit you will be granted a token to contribute to this canvas!</p>
+    <a href="/edit" class="submit-button" style="margin-top: 0.5rem;">Edit</a>
   </div>
-</div>
-<div style="background-color: #9bc0de; text-align: center; padding-bottom: 2rem;">
-  <p style="font-size: 1.2rem; margin-top: 0.5rem; margin-bottom: 1.5rem; color: #333;">when you submit you will be granted a token to contribute to this canvas!</p>
-  <a href="/edit" class="submit-button" style="margin-top: 0.5rem;">Edit</a>
 </div>
 <div id="gallery" style="background-color: #b7b8ed; padding: 2rem; text-align: center;">
   <h1 style="font-size: 3.5em; margin-bottom: 2rem;"><b>Gallery:</b></h1>
