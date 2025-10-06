@@ -1,12 +1,5 @@
 {
   "rows": 50,
   "cols": 50,
-  "filled": [
-    { "r": 10, "c": 10, "color": "#ff6b6b" },
-    { "r": 10, "c": 11, "color": "#ff6b6b" },
-    { "r": 11, "c": 10, "color": "#ff6b6b" },
-    { "r": 20, "c": 20, "color": "#6bafff" },
-    { "r": 25, "c": 30, "color": "#ffd56b" },
-    { "r": 30, "c": 25, "color": "#6bff9e" }
-  ]
+  "filled": []
 }
