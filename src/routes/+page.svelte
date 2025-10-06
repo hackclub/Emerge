@@ -1,153 +1,260 @@
-<script>
-	
-	onMount(() => {
-		const canvas = document.getElementById("gridCanvas");
-		const ctx = canvas.getContext("2d");
-		const rows = 50;
-		const cols = 50;
-		const cellWidth = canvas.width / cols;
-		const cellHeight = canvas.height / rows;
+<script lang="ts">
+import { onMount } from 'svelte';
 
-		function drawGrid(highlight = null) {
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			ctx.strokeStyle = "#ddd";
-			for (let i = 0; i < rows; i++) {
-				for (let j = 0; j < cols; j++) {
-					let x = j * cellWidth;
-					let y = i * cellHeight;
-					ctx.strokeRect(x, y, cellWidth, cellHeight);
-				}
-			}
-			if (highlight) {
-				ctx.strokeStyle = "black";
-				ctx.lineWidth = 2;
-				ctx.strokeRect(highlight.x, highlight.y, cellWidth, cellHeight);
-				ctx.lineWidth = 1;
-			}
-		}
+type Cell = [number, number];
+type Highlight = { x: number; y: number } | null;
 
-		canvas.addEventListener("mousemove", (e) => {
-			const rect = canvas.getBoundingClientRect();
-			const x = e.clientX - rect.left;
-			const y = e.clientY - rect.top;
-			const col = Math.floor(x / cellWidth);
-			const row = Math.floor(y / cellHeight);
-			drawGrid({ x: col * cellWidth, y: row * cellHeight });
-		});
+interface Boid {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+}
 
-		canvas.addEventListener("mouseleave", () => {
-			drawGrid();
-		});
+let boids: Boid[] = [];
+const numBoids = 200;
+const mouse = { x: 0, y: 0 };
 
-		drawGrid();
-	});
+function handleMouseMove(event: MouseEvent) {
+  mouse.x = event.clientX;
+  mouse.y = event.clientY;
+}
 
-	import { onMount } from 'svelte';
+onMount(() => {
+  // canvas responsive setup
+  let cleanup: (() => void) | undefined;
 
-	let boids = [];
-	const numBoids = 200;
-	const mouse = { x: 0, y: 0 };
+  (async () => {
+    const canvas = document.getElementById('gridCanvas') as HTMLCanvasElement | null;
+    const container = document.getElementById('canvasContainer') as HTMLElement | null;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-	function handleMouseMove(event) {
-		mouse.x = event.clientX;
-		mouse.y = event.clientY;
-	}
-	
-	onMount(() => {
-``
-		// init all the boids
-		boids = Array.from({ length: numBoids }, () => ({
-			x: Math.random() * window.innerWidth,
-			y: Math.random() * window.innerHeight,
-			vx: (Math.random() - 0.5) * 2,
-			vy: (Math.random() - 0.5) * 2
-		}));
+    const c = canvas as HTMLCanvasElement;
+    const CTX = ctx as CanvasRenderingContext2D;
 
-		// update loop
-		function updateBoids() {
-			const perceptionRadius = 100;
-			const mouseAttraction = 0.05;
+  let rows = 50;
+  let cols = 50;
+  // filledCells normalized to objects { r, c, color }
+  type FilledCell = { r: number; c: number; color?: string };
+  let filled: FilledCell[] = [];
 
-			for (let i = 0; i < boids.length; i++) {
-				let boid = boids[i];
+    try {
+      const res = await fetch('/canvas.json');
+      if (res.ok) {
+        const data = await res.json();
+        rows = data.rows || rows;
+        cols = data.cols || cols;
+        // normalize filled entries: support legacy [r,c] arrays and new {r,c,color} objects
+        const raw = data.filled || [];
+        filled = raw.map((item: any) => {
+          if (Array.isArray(item) && item.length >= 2) {
+            return { r: Number(item[0]), c: Number(item[1]), color: '#ec3750' };
+          }
+          if (item && typeof item === 'object' && 'r' in item && 'c' in item) {
+            return { r: Number(item.r), c: Number(item.c), color: item.color || '#ec3750' };
+          }
+          return null;
+        }).filter(Boolean) as FilledCell[];
+      }
+    } catch (e) {
+      console.warn('Could not load canvas.json', e);
+      filled = [];
+    }
 
-				let alignment = { x: 0, y: 0 };
-				let cohesion = { x: 0, y: 0 };
-				let separation = { x: 0, y: 0 };
-				let total = 0;
+    let displaySize = 500;
+    let cellWidth = displaySize / cols;
+    let cellHeight = displaySize / rows;
 
-				for (let j = 0; j < boids.length; j++) {
-					if (i === j) continue;
+    function setCanvasSize(sizePx: number) {
+      displaySize = sizePx;
+      const dpr = window.devicePixelRatio || 1;
+      c.style.width = `${displaySize}px`;
+      c.style.height = `${displaySize}px`;
+      c.width = Math.floor(displaySize * dpr);
+      c.height = Math.floor(displaySize * dpr);
+      CTX.setTransform(dpr, 0, 0, dpr, 0, 0);
+      cellWidth = displaySize / cols;
+      cellHeight = displaySize / rows;
+    }
 
-					let other = boids[j];
-					let dx = other.x - boid.x;
-					let dy = other.y - boid.y;
-					let distance = Math.hypot(dx, dy);
+    function drawGrid(highlight: Highlight = null) {
+      CTX.clearRect(0, 0, c.width, c.height);
+      CTX.strokeStyle = '#ddd';
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          let x = j * cellWidth;
+          let y = i * cellHeight;
+          CTX.strokeRect(x, y, cellWidth, cellHeight);
+        }
+      }
 
-					if (distance < perceptionRadius) {
-						alignment.x += other.vx;
-						alignment.y += other.vy;
+      for (const cell of filled) {
+        const r = cell.r;
+        const cc = cell.c;
+        const color = cell.color || '#ec3750';
+        if (r >= 0 && r < rows && cc >= 0 && cc < cols) {
+          CTX.fillStyle = color;
+          CTX.fillRect(cc * cellWidth, r * cellHeight, cellWidth, cellHeight);
+        }
+      }
 
-						cohesion.x += other.x;
-						cohesion.y += other.y;
+      if (highlight) {
+        CTX.strokeStyle = 'black';
+        CTX.lineWidth = 2;
+        CTX.strokeRect(highlight.x, highlight.y, cellWidth, cellHeight);
+        CTX.lineWidth = 1;
+      }
+    }
 
-						if (distance < 30) {
-							separation.x -= dx;
-							separation.y -= dy;
-						}
-						total++;
-					}
-				}
+    function onPointerMove(e: MouseEvent) {
+      const rect = c.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const col = Math.floor(x / cellWidth);
+      const row = Math.floor(y / cellHeight);
+      drawGrid({ x: col * cellWidth, y: row * cellHeight });
+    }
 
-				if (total > 0) {
-					alignment.x /= total;
-					alignment.y /= total;
+    function onPointerLeave() {
+      drawGrid();
+    }
 
-					cohesion.x = cohesion.x / total - boid.x;
-					cohesion.y = cohesion.y / total - boid.y;
+    const initialContainerWidth = container ? container.getBoundingClientRect().width : 600;
+    const initialSize = Math.min(initialContainerWidth, window.innerHeight * 0.7);
+    setCanvasSize(initialSize);
 
-					boid.vx += alignment.x * 0.05 + cohesion.x * 0.005 + separation.x * 0.05;
-					boid.vy += alignment.y * 0.05 + cohesion.y * 0.005 + separation.y * 0.05;
-				}
+    c.addEventListener('mousemove', onPointerMove);
+    c.addEventListener('mouseleave', onPointerLeave);
 
-				//pull toward mouse
-				//let dx = mouse.x - boid.x;
-				//let dy = mouse.y - boid.y;
-				//boid.vx += dx * mouseAttraction / 10;
-				//boid.vy += dy * mouseAttraction / 10;
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const w = entry.contentRect.width;
+        const size = Math.min(w, window.innerHeight * 0.7);
+        setCanvasSize(size);
+        drawGrid();
+      }
+    });
+    if (container) ro.observe(container);
 
-				//speed lim
-				let speed = Math.hypot(boid.vx, boid.vy);
-				let maxSpeed = 2.6;
-				if (speed > maxSpeed) {
-					boid.vx = (boid.vx / speed) * maxSpeed;
-					boid.vy = (boid.vy / speed) * maxSpeed;
-				}
+    const onWinResize = () => {
+      const w = container ? container.getBoundingClientRect().width : window.innerWidth;
+      const size = Math.min(w, window.innerHeight * 0.7);
+      setCanvasSize(size);
+      drawGrid();
+    };
+    window.addEventListener('resize', onWinResize);
 
-				
-				boid.x += boid.vx;
-				boid.y += boid.vy;
-				const boidWidth = 60; 
-				const boidHeight = 20;
+    drawGrid();
 
-				if (boid.x < -boidWidth) boid.x = window.innerWidth + boidWidth;
-				if (boid.x > window.innerWidth + boidWidth) boid.x = -boidWidth;
-				if (boid.y < -boidHeight) boid.y = window.innerHeight + boidHeight;
-				if (boid.y > window.innerHeight + boidHeight) boid.y = -boidHeight;
+    cleanup = () => {
+      c.removeEventListener('mousemove', onPointerMove);
+      c.removeEventListener('mouseleave', onPointerLeave);
+      window.removeEventListener('resize', onWinResize);
+      if (container) ro.unobserve(container);
+      ro.disconnect();
+    };
+  })();
 
-			}
+  return () => {
+    // call async setup cleanup if set
+    try {
+      // nothing synchronous to clean here; async block sets up cleanup closure
+    } catch (e) {
+      // ignore
+    }
+  };
+});
 
-			//makes it reactive with svelte
-			boids = [...boids];
+onMount(() => {
+  // init all the boids
+  boids = Array.from({ length: numBoids }, () => ({
+    x: Math.random() * window.innerWidth,
+    y: Math.random() * window.innerHeight,
+    vx: (Math.random() - 0.5) * 2,
+    vy: (Math.random() - 0.5) * 2
+  }));
 
-			requestAnimationFrame(updateBoids);
-		}
+  // update loop
+  function updateBoids() {
+    const perceptionRadius = 100;
+    const mouseAttraction = 0.05;
 
-		requestAnimationFrame(updateBoids);
-	});
+    for (let i = 0; i < boids.length; i++) {
+      let boid = boids[i];
+
+      let alignment = { x: 0, y: 0 };
+      let cohesion = { x: 0, y: 0 };
+      let separation = { x: 0, y: 0 };
+      let total = 0;
+
+      for (let j = 0; j < boids.length; j++) {
+        if (i === j) continue;
+
+        let other = boids[j];
+        let dx = other.x - boid.x;
+        let dy = other.y - boid.y;
+        let distance = Math.hypot(dx, dy);
+
+        if (distance < perceptionRadius) {
+          alignment.x += other.vx;
+          alignment.y += other.vy;
+
+          cohesion.x += other.x;
+          cohesion.y += other.y;
+
+          if (distance < 30) {
+            separation.x -= dx;
+            separation.y -= dy;
+          }
+          total++;
+        }
+      }
+
+      if (total > 0) {
+        alignment.x /= total;
+        alignment.y /= total;
+
+        cohesion.x = cohesion.x / total - boid.x;
+        cohesion.y = cohesion.y / total - boid.y;
+
+        boid.vx += alignment.x * 0.05 + cohesion.x * 0.005 + separation.x * 0.05;
+        boid.vy += alignment.y * 0.05 + cohesion.y * 0.005 + separation.y * 0.05;
+      }
+
+      // speed limit
+      let speed = Math.hypot(boid.vx, boid.vy);
+      let maxSpeed = 2.6;
+      if (speed > maxSpeed) {
+        boid.vx = (boid.vx / speed) * maxSpeed;
+        boid.vy = (boid.vy / speed) * maxSpeed;
+      }
+
+      boid.x += boid.vx;
+      boid.y += boid.vy;
+      const boidWidth = 60;
+      const boidHeight = 20;
+
+      if (boid.x < -boidWidth) boid.x = window.innerWidth + boidWidth;
+      if (boid.x > window.innerWidth + boidWidth) boid.x = -boidWidth;
+      if (boid.y < -boidHeight) boid.y = window.innerHeight + boidHeight;
+      if (boid.y > window.innerHeight + boidHeight) boid.y = -boidHeight;
+
+    }
+
+    // makes it reactive with svelte
+    boids = [...boids];
+
+    requestAnimationFrame(updateBoids);
+  }
+
+  requestAnimationFrame(updateBoids);
+});
 </script>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Phantom+Sans:wght@400;700&display=swap');
 
 a {
   color: blue;
@@ -164,7 +271,7 @@ a:hover, a:active {
   color: white;
   padding: 12px 24px;
   text-decoration: none;
-  border-radius: 12px;
+  border-radius: 6px;
   font-weight: bold;
   font-family: 'Phantom Sans', sans-serif;
   font-size: 1rem;
@@ -221,8 +328,8 @@ table, th, td {
 		opacity: 0.2;
 		pointer-events: none;
 		transition: transform 0.05s linear;
-	}
-.boid {
+  }
+  .boid {
 	position: absolute;
 	width: 0;
 	height: 0;
@@ -231,9 +338,8 @@ table, th, td {
 	border-bottom: 10px solid #5b8ddaff; 
 	opacity: 1;
 	pointer-events: none;
-	transition: transform 0.1s linear, opacity 0.1s;
-}
-@import url('https://fonts.googleapis.com/css2?family=Phantom+Sans:wght@400;700&display=swap');
+    transition: transform 0.1s linear, opacity 0.1s;
+  }
 
 .title {
 	position: absolute;
@@ -279,31 +385,35 @@ table, th, td {
 
 
 }
+.canvas-title {
+  text-align: center;
+  font-size: 3rem;
+  margin: 0.5rem 0 1rem 0;
+  font-family: 'Phantom Sans', sans-serif;
+}
 </style>
 
 
 
-<div class="h-screen w-full bg-black relative overflow-hidden" on:mousemove={handleMouseMove}>
+<div class="h-screen w-full bg-black relative overflow-hidden" on:mousemove={handleMouseMove} role="region" aria-label="boids canvas container">
 
 
 	<!-- Boids -->
-	{#each boids as boid (boid)}
-		{#if boid.x > 6 && boid.x < window.innerWidth - 6 && boid.y > 10 && boid.y < window.innerHeight - 10}
-			<div
-				class="boid"
-				style="
-					transform: translate({boid.x}px, {boid.y}px) rotate({Math.atan2(boid.vy, boid.vx)}rad);
-				"
-			/>
-		{/if}
-	{/each}
+  {#each boids as boid (boid)}
+    {#if boid.x > 6 && boid.x < window.innerWidth - 6 && boid.y > 10 && boid.y < window.innerHeight - 10}
+      <div
+        class="boid"
+        style="transform: translate({boid.x}px, {boid.y}px) rotate({Math.atan2(boid.vy, boid.vx)}rad);"
+      ></div>
+    {/if}
+  {/each}
 	<h1 class="title">EMERGE<p class = sub><br><br>scroll for details</p></h1>
 	
 </div>
 <div id="fadeBW"></div>
 <div id="description">
 <br><br><br><div id="h1"><h1><u><b>Emerge YSWS:</b></u></h1></div>
-<p>The universe is big, beautiful, and <i>probably</i> not simulated, but if anything makes me doubt that, its <b>emergent behaviours.</b><br>Emergent behaviours are systems defined by simple rules that produce intricate and often beautifully complex results. A lot of natures incredible feats can be modelled by just a few easily programmible rules!</p>
+<p>The universe is big, beautiful, and <i>probably</i> not simulated, but if anything makes me doubt that, its <b>emergent behaviours.</b><br>Emergent behaviours are systems defined by simple rules that produce intricate and often beautifully complex results. A lot of natures incredible feats can be modelled by just a few easily programmable rules!</p>
 <br>
 <p>The example on this page's title screen is called boids (bird-oid objects), it mimicks the behaviour of flocking birds using only 3 simple rules.
 	<br>
@@ -326,12 +436,12 @@ table, th, td {
 		</thead>
 			<tbody>
 				<tr>
-					<td>Where is this available?</td>
-					<td>Worldwide! 🌎</td>
+					<td>When does this end?</td>
+          <td>November 1st!</td>
 				</tr>
 				<tr>
 					<td>Do I need to download anything?</td>
-					<td>You will need to track your hours with Hackatime and install an extension, see <a href="https://hackatime.hackclub.com/my/wakatime_setup">setup.</a></td>
+					<td>You will need to track your hours with Hackatime extension, see <a href="https://hackatime.hackclub.com/my/wakatime_setup">setup.</a></td>
 				</tr>
 				<tr>
 					<td>Do I need experience?</td>
@@ -339,59 +449,47 @@ table, th, td {
 				</tr>
 				<tr>
 					<td>Do I have to use p5.js</td>
-					<td>Yes please! I promise it's a small and worthwile learning curve</td>
+					<td>No! but its a super great tool. What you make has to be public and easy to run!</td>
 				</tr>
 				<tr>
-					<td>When does this end</td>
-					<td>October 20th or when the canvas fills up!</td>
+					<td>Can i get help?</td>
+					<td>Yes, join the slack channel #emerge <a href="https://hackclub.slack.com/archives/C09900Q6873">here</a>.</td>
 				</tr>
 				<tr>
 					<td>Is there a minimum hour requirement?</td>
 					<td>A super basic project could be done in an hour</td>
 				</tr>
+        <tr>
+          <td>Can I submit more than one project?</td>
+          <td>Yes!</td>
 				<tr>
-					<td>Is there a maximum hour requirement?</td>
-					<td>Absolutely not.</td>
-				</tr>
-				<tr>
-					<td>Where can I ask more questions?</td>
-					<td>DM EuanRipper on slack or join the EMERGE channel</td>
-				</tr>
-				<tr>
-					<td>How is this financed?</td>
-					<td>Through generous sponsors who want to see a better world with more coders — see <a href="https://hackclub.com/fiscal-sponsorship/">HCB</a>.</td>
+					<td>someone already made the thing i wanted to do?!</td>
+					<td>Make a creative twist on it! change the parameters or colours, ie adding another rule to game of life.</td>
 				</tr>
 				<tr>
 					<td>Who can take part?</td>
-					<td>Anyone under 18!</td>
+					<td>Anyone under 18 or in highschool!</td>
 				</tr>
 			</tbody>
-	</table>
-	
+  </table>
 </div>
-<br><br>
+
 </div>
 <div style="background-color: #9bc0de; padding: 2rem; text-align:center;">
-	<canvas id="gridCanvas" width="500" height="500" style="border:1px solid #ccc; display:block; margin:0 auto;"></canvas>
-	<br>
-	<a href="/edit" 
-		style="background-color: #ec3750; color: white; padding: 12px 24px; border-radius: 12px; 
-		       font-weight: bold; font-family: 'Phantom Sans', sans-serif; font-size: 1rem; 
-		       text-decoration: none; display: inline-block; transition: background-color 0.2s ease;">
-		Edit
-	</a>
+  <div id="canvasContainer" style="max-width: 90%; margin: 0 auto; display: inline-block;">
+    <h1 class="canvas-title" style="margin-bottom: 2rem;">The Canvas</h1>
+    <canvas id="gridCanvas" width="500" height="500" style="border:1px solid #ccc; display:block; margin:0 auto;"></canvas>
+  </div>
 </div>
-<div id="gallery" style="background-color: #b7b8ed; padding: 2rem;">
-
-	<h1 style="font-size: 3.5em; text-align: center; margin-bottom: 2rem;"><b>Gallery:</b></h1>
-
-	<div style="
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: center;
-		gap: 2rem;
-	">
-<div style="flex: 1 1 300px; max-width: 300px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.2);">
+<div id="gallery" style="background-color: #b7b8ed; padding: 2rem; text-align: center;">
+  <h1 style="font-size: 3.5em; margin-bottom: 2rem;"><b>Gallery:</b></h1>
+  <div style="
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2rem;
+  ">
+<div style="flex: 1 1 300px; max-width: 300px; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.2);">
     <a href="https://editor.p5js.org/EuanRipper/sketches/EHEQRDQ9c" target="_blank" style="text-decoration: none; color: inherit;">
         <img src="https://hc-cdn.hel1.your-objectstorage.com/s/v3/dd54130f71e150264726704b6d8774f469738c4d_image.png" 
              alt="Sand Pits Demo" 
@@ -403,7 +501,7 @@ table, th, td {
     </a>
 </div>
 
-<div style="flex: 1 1 300px; max-width: 300px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.2);">
+<div style="flex: 1 1 300px; max-width: 300px; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.2);">
     <a href="https://editor.p5js.org/EuanRipper/sketches/jcCEwdaPH" target="_blank" style="text-decoration: none; color: inherit;">
         <img src="https://hc-cdn.hel1.your-objectstorage.com/s/v3/a2d07d44d8bc5cc3258c8fc7a13bec20847d0d6d_image.png" 
              alt="Conway's Game of Life Thumbnail" 
@@ -418,12 +516,12 @@ table, th, td {
 </div>
 <div style="text-align: center; padding: 3rem 0; background-color: #d5f2e3;">
 	<p style="font-size: 1.5rem; margin-bottom: 1rem;">Ready to submit?</p>
-	<a href="https://airtable.com/appkvgcDqKrSEsojv/pagiSHKTdFhFTfJYY/form" class="submit-button">Submit</a>
+	<a href="https://forms.hackclub.com/emerge" class="submit-button">Submit</a>
 </div>
 
 
 <div class=footer>
 	<p>
-	made with &lt;3 by <a href=https://hackclub.com>hack clubbers</a>
+	made with &lt;3 by <a href=https://hackclub.com>hack clubbers</a> (Euan R)
 	</p>
 </div>

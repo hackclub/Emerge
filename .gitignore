@@ -1,5 +1,7 @@
-node_modules
+.cache/
+node_modules/
 
+data/token_store.json
 # Output
 .output
 .vercel
@@ -10,9 +12,7 @@ node_modules
 
 # OS
 .DS_Store
-Thumbs.db
 
-# Env
 .env
 .env.*
 !.env.example
