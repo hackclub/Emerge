@@ -420,7 +420,7 @@ table, th, td {
 	<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Seperation: Boids steer away from neighbouring Boids that get too close
 	<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Alignment: Boids try to match the speed and direction of their neighbours
 	<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Cohesion: Boids move toward the center of mass of their neighbours
-	<br><br> from the formation of spots on animals to the language abilities of chatGPT, hundreds of systems exhibit emergent behaviours. I've compiled a list of the best on the <a href=https://hackclub.slack.com/archives/C09900Q6873>slack channel</a>. If you ship an emergent behaviour, you will get to place pixels (10 X hours tracked on hackatime) on the canvas. As more projects are submitted an <i>"artwork"</i> will #EMERGE. At the end of the event I'll ship everyone the canvas in a poster! 
+	<br><br> from the formation of spots on animals to the language abilities of chatGPT, hundreds of systems exhibit emergent behaviours. I've compiled a list of the best on the <a href=https://hackclub.slack.com/archives/C09900Q6873>slack channel</a>. If you ship an emergent behaviour, you will get to place pixels (30 X hours tracked on hackatime) on the canvas. As more projects are submitted an <i>"artwork"</i> will #EMERGE. At the end of the event I'll ship everyone the canvas in a poster! 
 	</p>
 
 </div>
