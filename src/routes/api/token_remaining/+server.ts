@@ -27,11 +27,18 @@ export const GET: RequestHandler = async ({ url }) => {
     const store = JSON.parse(raw || '{}');
     const entry = store[tokenHash];
 
+    const debugInfo = {
+      receivedToken: token,
+      computedHash: crypto.createHash('sha256').update(token).digest('hex'),
+      tokenStorePath: storePath,
+      tokenStoreContent: fs.existsSync(storePath) ? fs.readFileSync(storePath, 'utf8') : 'File not found'
+    };
+
     if (!entry) {
-      return new Response(JSON.stringify({ remaining: null, error: 'not_found' }), { status: 404, headers: { 'content-type': 'application/json' } });
+      return new Response(JSON.stringify({ remaining: null, error: 'not_found', debug: debugInfo }), { status: 404, headers: { 'content-type': 'application/json' } });
     }
 
-    return new Response(JSON.stringify({ remaining: entry.remaining }), { status: 200, headers: { 'content-type': 'application/json' } });
+    return new Response(JSON.stringify({ remaining: entry.remaining, debug: debugInfo }), { status: 200, headers: { 'content-type': 'application/json' } });
   } catch (e) {
     return new Response(JSON.stringify({ remaining: null, error: String(e) }), { status: 500, headers: { 'content-type': 'application/json' } });
   }
