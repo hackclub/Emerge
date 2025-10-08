@@ -180,7 +180,7 @@ async function checkToken() {
   <p>Enter your one-time token and click "Check" to see how many edits you have.</p>
   <div style="display:flex; gap: 1rem; align-items:center;">
     <input bind:value={token} placeholder="friend token" />
-    <button on:click={checkToken} {disabled:checking}>Check</button>
+    <button on:click={checkToken} disabled={checking}>Check</button>
     <div style="margin-left:8px; color:#666">{message}</div>
   </div>
 
