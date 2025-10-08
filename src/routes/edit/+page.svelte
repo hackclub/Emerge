@@ -72,7 +72,7 @@ function mapPointerToCell(clientX: number, clientY: number) {
 
 
 onMount(async () => {
-  const res = await fetch('/canvas.json');
+  const res = await fetch('/data/coolify/applications/canvas.json');
   canvasData = await res.json();
   rows = canvasData.rows || rows;
   cols = canvasData.cols || cols;

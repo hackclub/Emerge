@@ -41,7 +41,7 @@ onMount(() => {
   let filled: FilledCell[] = [];
 
     try {
-      const res = await fetch('/canvas.json');
+      const res = await fetch('/data/coolify/applications/canvas.json');
       if (res.ok) {
         const data = await res.json();
         rows = data.rows || rows;
