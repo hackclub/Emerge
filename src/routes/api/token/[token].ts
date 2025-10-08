@@ -9,6 +9,13 @@ const storePath = path.resolve('data/token_store.json');
 export const GET: RequestHandler = async ({ params }) => {
   const token = params.token;
   const tokenHash = crypto.createHash('sha256').update(String(token)).digest('hex');
+  // Temporary fallback: accept this specific pre-generated token hash until
+  // the deployed `data/token_store.json` is available and functioning.
+  // REMOVE THIS BLOCK once the token store is confirmed working on the server.
+  const TEMP_FALLBACK_HASH = '66d8a141299352d07db20ba34af6a63e08881bfeef7d44f527221b50c7bf48ee';
+  if (tokenHash === TEMP_FALLBACK_HASH) {
+    return new Response(JSON.stringify({ valid: true, remaining: 10, expires: null, note: 'temporary-fallback' }), { status: 200, headers: { 'content-type': 'application/json' } });
+  }
   try {
     const store = JSON.parse(fs.readFileSync(storePath, 'utf8'));
     const entry = store[tokenHash];
