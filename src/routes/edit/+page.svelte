@@ -12,6 +12,8 @@ let queued: Array<{ r: number; c: number; color: string }> = [];
 let canvasEl: HTMLCanvasElement | null = null;
 let ctx: CanvasRenderingContext2D | null = null;
 let ro: ResizeObserver | null = null;
+let editsRemaining: number | null = null; // Track remaining edits
+let tokenValidated = false; // Track if the token is validated
 
 function normalizeFilled(arr: any[]) {
   return arr.map((it: any) => (Array.isArray(it) ? { r: it[0], c: it[1], color: '#ec3750' } : it));
@@ -123,7 +125,14 @@ function toggleCell(r: number, c: number) {
 }
 
 async function submitEdits() {
-  if (queued.length === 0) { message = 'No edits queued'; return; }
+  if (!tokenValidated) {
+    message = 'Token not validated. Please check your token first.';
+    return;
+  }
+  if (queued.length === 0) {
+    message = 'No edits queued';
+    return;
+  }
   const res = await fetch('/api/apply-edits', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -137,6 +146,33 @@ async function submitEdits() {
     message = `Failed: ${data.reason || data.error || 'unknown'}`;
   }
 }
+
+async function checkToken() {
+  if (!token) {
+    message = 'Please enter a token';
+    return;
+  }
+  checking = true;
+  try {
+    const res = await fetch(`/api/token_remaining?token=${token}`);
+    if (res.ok) {
+      const data = await res.json();
+      editsRemaining = data.remaining;
+      tokenValidated = true; // Mark token as validated
+      message = `Token valid. Edits remaining: ${editsRemaining}`;
+    } else {
+      editsRemaining = null;
+      tokenValidated = false;
+      message = 'Invalid token';
+    }
+  } catch (e) {
+    editsRemaining = null;
+    tokenValidated = false;
+    message = 'Error checking token';
+  } finally {
+    checking = false;
+  }
+}
 </script>
 
 <div style="padding: 2rem; max-width: 800px; margin: 0 auto;">
@@ -144,9 +180,13 @@ async function submitEdits() {
   <p>Enter your one-time token and click "Check" to see how many edits you have.</p>
   <div style="display:flex; gap: 1rem; align-items:center;">
     <input bind:value={token} placeholder="friend token" />
-    <button on:click={submitEdits}>Submit 45 edits</button>
+    <button on:click={checkToken} {disabled:checking}>Check</button>
     <div style="margin-left:8px; color:#666">{message}</div>
   </div>
+
+  {#if editsRemaining !== null}
+    <div style="margin-top:1rem;">Edits remaining: {editsRemaining}</div>
+  {/if}
 
   <div style="margin-top:1rem;">
     <label>Color: <input type="color" bind:value={color} /></label>
