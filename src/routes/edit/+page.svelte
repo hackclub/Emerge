@@ -3,6 +3,7 @@ import { onMount, onDestroy } from 'svelte';
 
 let message = '';
 let checking = false;
+let token = '';
 let color = '#ff6b6b';
 let rows = 50;
 let cols = 50;
@@ -132,6 +133,8 @@ async function submitEdits() {
   <h1>Edit Canvas</h1>
   <p>Enter your one-time token and click "Check" to see how many edits you have.</p>
   <div style="display:flex; gap: 1rem; align-items:center;">
+    <input bind:value={token} placeholder="friend token" />
+    <button on:click={submitEdits}>Submit 45 edits</button>
     <div style="margin-left:8px; color:#666">{message}</div>
   </div>
 
