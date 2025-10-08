@@ -75,16 +75,25 @@ function mapPointerToCell(clientX: number, clientY: number) {
 let handler: (ev: PointerEvent) => void;
 
 onMount(async () => {
-  try {
-    const res = await fetch('/api/canvas');
-    if (!res.ok) throw new Error('Network response was not ok');
-    const canvasData = await res.json();
-    rows = canvasData.rows || rows;
-    cols = canvasData.cols || cols;
-    drawCanvas();
-  } catch (error) {
-    console.error('Failed to fetch canvas data:', error);
+  const res = await fetch('/api/canvas');
+  if (!res.ok) {
+    console.error('Failed to fetch canvas data:', res.status, res.statusText);
+    return;
   }
+  const canvasData = await res.json();
+  rows = canvasData.rows || rows;
+  cols = canvasData.cols || cols;
+  const raw = canvasData.filled || [];
+  canvasData.filled = raw.map((item: any) => {
+    if (Array.isArray(item) && item.length >= 2) {
+      return { r: Number(item[0]), c: Number(item[1]), color: '#ec3750' };
+    }
+    if (item && typeof item === 'object' && 'r' in item && 'c' in item) {
+      return { r: Number(item.r), c: Number(item.c), color: item.color || '#ec3750' };
+    }
+    return null;
+  }).filter(Boolean);
+  drawCanvas();
 
   // setup canvas context and resize observer
   if (canvasEl) {
@@ -186,7 +195,7 @@ async function checkToken() {
   <h1>Edit Canvas</h1>
   <p>Enter your one-time token and click "Check" to see how many edits you have.</p>
   <div style="display:flex; gap: 1rem; align-items:center;">
-    <input bind:value={token} placeholder="friend token" />
+    <input bind:value={token} placeholder="token" />
     <button on:click={checkToken} disabled={checking}>Check</button>
     <div style="margin-left:8px; color:#666">{message}</div>
   </div>
