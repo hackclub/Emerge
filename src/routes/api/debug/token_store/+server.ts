@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import type { RequestHandler } from '@sveltejs/kit';
 
-const storePath = path.resolve('data/token_store.json');
+const storePath = path.resolve('/data/coolify/applications/lskskgs0kcsskgsgkcoo00g4/token_store.json');
 
 export const GET: RequestHandler = async ({ url, request }) => {
   const provided = url.searchParams.get('secret') || request.headers.get('x-admin-secret');

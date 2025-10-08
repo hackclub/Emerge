@@ -3,8 +3,8 @@ import path from 'path';
 import type { RequestHandler } from '@sveltejs/kit';
 import crypto from 'crypto';
 
-const canvasPath = path.resolve('static/canvas.json');
-const storePath = path.resolve('data/token_store.json');
+const canvasPath = path.resolve('/data/coolify/applications/canvas.json');
+const storePath = path.resolve('/data/coolify/applications/lskskgs0kcsskgsgkcoo00g4/token_store.json');
 
 export const POST: RequestHandler = async ({ request }) => {
   try {

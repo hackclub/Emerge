@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const storePath = path.resolve(__dirname, '../data/token_store.json');
+const storePath = path.resolve('/data/coolify/applications/lskskgs0kcsskgsgkcoo00g4/token_store.json');
 const args = process.argv.slice(2);
 const edits = Number(args[0] || 10);
 // optional TTL in minutes (default 4320 minutes, i.e., 3 days)
