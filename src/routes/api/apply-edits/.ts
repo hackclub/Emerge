@@ -3,7 +3,8 @@ import path from 'path';
 import crypto from 'crypto';
 import type { RequestHandler } from '@sveltejs/kit';
 
-const storePath = path.resolve('data/token_store.json');
+// token store removed: no server-side token check in this build
+// const storePath = path.resolve('data/token_store.json');
 const canvasPath = path.resolve('static/canvas.json');
 
 export const POST: RequestHandler = async ({ request }) => {

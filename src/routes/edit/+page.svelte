@@ -1,10 +1,7 @@
 <script lang="ts">
 import { onMount, onDestroy } from 'svelte';
 
-let token = '';
-let remaining = 0;
 let message = '';
-let tokenValid = false;
 let checking = false;
 let color = '#ff6b6b';
 let rows = 50;
@@ -70,37 +67,6 @@ function mapPointerToCell(clientX: number, clientY: number) {
   return { r, c };
 }
 
-async function checkToken() {
-  if (!token) { message = 'Enter a token first'; return; }
-  checking = true;
-  message = '';
-  try {
-    const res = await fetch(`/api/token/${token}`);
-    const data = await res.json().catch(() => null);
-    if (res.ok && data) {
-      remaining = data.remaining || 0;
-      tokenValid = true;
-      message = `Token valid — ${remaining} edits remaining`;
-    } else {
-      remaining = 0;
-      tokenValid = false;
-      // prefer explicit reason from server when available
-      if (data && data.reason) {
-        message = `Invalid token: ${data.reason}`;
-      } else if (data && data.tokenHash) {
-        message = 'Invalid token (not found)';
-      } else {
-        message = 'Invalid token';
-      }
-    }
-  } catch (e) {
-    remaining = 0;
-    tokenValid = false;
-    message = `Network error: ${e?.message || e}`;
-  } finally {
-    checking = false;
-  }
-}
 
 onMount(async () => {
   const res = await fetch('/canvas.json');
@@ -115,11 +81,6 @@ onMount(async () => {
     ro.observe(canvasEl);
 
     const handler = (ev: PointerEvent) => {
-      // require a validated token before allowing edits
-      if (!tokenValid) {
-        message = 'Please check your token first';
-        return;
-      }
       const cell = mapPointerToCell(ev.clientX, ev.clientY);
       if (!cell) return;
       if (ev.type === 'pointerdown') {
@@ -143,31 +104,24 @@ onDestroy(() => {
 });
 
 function toggleCell(r: number, c: number) {
-  if (!tokenValid) { message = 'Validate your token first'; return; }
   if (queued.findIndex(q => q.r === r && q.c === c) >= 0) {
     queued = queued.filter(q => !(q.r === r && q.c === c));
   } else {
-    if (remaining > 0 && queued.length >= remaining) {
-      message = 'You have reached your allowed edits';
-      return;
-    }
     queued = [...queued, { r, c, color }];
   }
 }
 
 async function submitEdits() {
-  if (!token) { message = 'Enter token first'; return; }
   if (queued.length === 0) { message = 'No edits queued'; return; }
   const res = await fetch('/api/apply-edits', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ token, edits: queued })
+    body: JSON.stringify({ edits: queued })
   });
   const data = await res.json();
   if (data.ok) {
-    message = `Applied edits. Remaining: ${data.remaining}`;
+    message = `Applied edits.`;
     queued = [];
-    remaining = data.remaining;
   } else {
     message = `Failed: ${data.reason || data.error || 'unknown'}`;
   }
@@ -178,10 +132,7 @@ async function submitEdits() {
   <h1>Edit Canvas</h1>
   <p>Enter your one-time token and click "Check" to see how many edits you have.</p>
   <div style="display:flex; gap: 1rem; align-items:center;">
-  <input bind:value={token} placeholder="token" on:input={() => { tokenValid = false; remaining = 0; message = ''; queued = []; }} />
-  <button on:click={checkToken} disabled={checking}>{checking ? 'Checking…' : 'Check'}</button>
-  <span style="margin-left:8px; font-weight:600;">{tokenValid ? `Remaining: ${remaining}` : ''}</span>
-  <div style="margin-left:8px; color:#666">{message}</div>
+    <div style="margin-left:8px; color:#666">{message}</div>
   </div>
 
   <div style="margin-top:1rem;">
