@@ -1,23 +1,23 @@
-# Use the official Node.js image as the base image
+# Use the official Node.js 18 Alpine image
 FROM node:18-alpine
 
-# Set the working directory in the container
+# Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json to the working directory
-COPY package.json package-lock.json ./
+# Copy dependency manifests
+COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm ci
 
-# Copy the rest of the application code to the working directory
+# Copy the application source
 COPY . .
 
-# Build the SvelteKit application
+# Build the production app
 RUN npm run build
 
-# Expose the port the app runs on
+# Expose the app's port (Traefik expects this)
 EXPOSE 3000
 
-# Start the application
-CMD ["npm", "run", "preview"]
+# Run the built Node server
+CMD ["node", "build"]
