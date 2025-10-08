@@ -147,7 +147,7 @@ async function submitEdits() {
     <div style="max-width:480px; width:100%; border:1px solid #ddd; padding:8px; box-sizing:border-box;">
       <div style="position:relative; width:100%; padding-top: calc( (1 / {cols}) * {rows} * 100% );">
         <!-- keeps the rows/cols ratio -->
-        <canvas bind:this={canvasEl} style="position:absolute; left:8px; top:8px; right:8px; bottom:8px; width:calc(100% - 16px); height:calc(100% - 16px); touch-action: manipulation; cursor:crosshair;" />
+  <canvas bind:this={canvasEl} style="position:absolute; left:8px; top:8px; right:8px; bottom:8px; width:calc(100% - 16px); height:calc(100% - 16px); touch-action: manipulation; cursor:crosshair;"></canvas>
       </div>
     </div>
   </div>
