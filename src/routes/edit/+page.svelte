@@ -123,10 +123,14 @@ async function submitEdits() {
     message = 'No edits queued';
     return;
   }
+
+  // Sanitize token
+  const sanitizedToken = token.trim();
+
   const res = await fetch('/api/apply-edits', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ token, edits: queued })
+    body: JSON.stringify({ token: sanitizedToken, edits: queued })
   });
   const data = await res.json();
   if (data.ok) {
@@ -196,5 +200,9 @@ async function checkToken() {
 
   <div style="margin-top:1rem;">
     <button on:click={submitEdits}>Submit edits</button>
+  </div>
+
+  <div style="margin-top:2rem;">
+    <button on:click={() => window.location.href = '/'}>Back to Home</button>
   </div>
 </div>
