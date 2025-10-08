@@ -76,16 +76,6 @@ onMount(async () => {
   canvasData = await res.json();
   rows = canvasData.rows || rows;
   cols = canvasData.cols || cols;
-  // fetch remaining count
-  try {
-    const rem = await fetch(`/api/token_remaining?token=${token}`); // Include token in query string
-    if (rem.ok) {
-      const jr = await rem.json();
-      if (jr && typeof jr.remaining === 'number') {
-        message = `Edits remaining: ${jr.remaining}`;
-      }
-    }
-  } catch (e) {}
   // setup canvas context and resize observer
   if (canvasEl) {
     ctx = canvasEl.getContext('2d');
@@ -154,12 +144,14 @@ async function checkToken() {
   }
   checking = true;
   try {
-    const res = await fetch(`/api/token_remaining?token=${token}`);
-    if (res.ok) {
-      const data = await res.json();
-      editsRemaining = data.remaining;
-      tokenValidated = true; // Mark token as validated
-      message = `Token valid. Edits remaining: ${editsRemaining}`;
+    const rem = await fetch(`/api/token_remaining?token=${token}`);
+    if (rem.ok) {
+      const jr = await rem.json();
+      if (jr && typeof jr.remaining === 'number') {
+        editsRemaining = jr.remaining;
+        tokenValidated = true;
+        message = `Token valid. Edits remaining: ${editsRemaining}`;
+      }
     } else {
       editsRemaining = null;
       tokenValidated = false;
