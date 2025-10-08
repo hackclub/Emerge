@@ -88,25 +88,19 @@ onMount(async () => {
     console.error('Failed to fetch canvas data:', res.status, res.statusText);
     return;
   }
-  const canvasData = await res.json();
-  rows = canvasData.rows || rows;
-  cols = canvasData.cols || cols;
-  const raw = canvasData.filled || [];
-  canvasData.filled = raw.map((item: any) => {
-    if (Array.isArray(item) && item.length >= 2) {
-      return { r: Number(item[0]), c: Number(item[1]), color: '#ec3750' };
-    }
-    if (item && typeof item === 'object' && 'r' in item && 'c' in item) {
-      return { r: Number(item.r), c: Number(item.c), color: item.color || '#ec3750' };
-    }
-    return null;
-  }).filter(Boolean);
+  const data = await res.json();
+  canvasData = {
+    rows: data.rows || rows,
+    cols: data.cols || cols,
+    filled: normalizeFilled(data.filled || [])
+  };
+  rows = canvasData.rows;
+  cols = canvasData.cols;
   drawCanvas();
 
   // setup canvas context and resize observer
   if (canvasEl) {
     ctx = canvasEl.getContext('2d');
-    drawCanvas();
     ro = new ResizeObserver(() => drawCanvas());
     ro.observe(canvasEl);
 
