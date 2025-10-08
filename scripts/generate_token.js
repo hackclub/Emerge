@@ -9,10 +9,8 @@ const __dirname = path.dirname(__filename);
 const storePath = path.resolve(__dirname, '../data/token_store.json');
 const args = process.argv.slice(2);
 const edits = Number(args[0] || 10);
-// optional TTL in minutes (default 60 minutes)
-const ttlMinutes = Number(args[1] || 60);
-// require an ADMIN secret 
-// Provide via env var ADMIN_SECRET or as the third CLI argument.
+// optional TTL in minutes (default 4320 minutes, i.e., 3 days)
+const ttlMinutes = Number(args[1] || 4320);
 const providedSecret = process.env.ADMIN_SECRET || args[2];
 if (!providedSecret) {
   console.error('REFUSING TO RUN: ADMIN_SECRET is required to generate tokens.');

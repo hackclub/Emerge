@@ -1,17 +1,31 @@
 import fs from 'fs';
 import path from 'path';
 import type { RequestHandler } from '@sveltejs/kit';
+import crypto from 'crypto';
 
-const statePath = path.resolve('data/single_token_state.json');
+const storePath = path.resolve('data/token_store.json');
 
-export const GET: RequestHandler = async () => {
+export const GET: RequestHandler = async ({ url }) => {
   try {
-    if (!fs.existsSync(statePath)) {
+    const token = url.searchParams.get('token');
+    if (!token) {
+      return new Response(JSON.stringify({ remaining: null, error: 'missing_token' }), { status: 400, headers: { 'content-type': 'application/json' } });
+    }
+
+    if (!fs.existsSync(storePath)) {
       return new Response(JSON.stringify({ remaining: null, error: 'not_found' }), { status: 404, headers: { 'content-type': 'application/json' } });
     }
-    const raw = fs.readFileSync(statePath, 'utf8');
-    const parsed = JSON.parse(raw || '{}');
-    return new Response(JSON.stringify({ remaining: parsed.remaining ?? null }), { status: 200, headers: { 'content-type': 'application/json' } });
+
+    const raw = fs.readFileSync(storePath, 'utf8');
+    const store = JSON.parse(raw || '{}');
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const entry = store[tokenHash];
+
+    if (!entry) {
+      return new Response(JSON.stringify({ remaining: null, error: 'not_found' }), { status: 404, headers: { 'content-type': 'application/json' } });
+    }
+
+    return new Response(JSON.stringify({ remaining: entry.remaining }), { status: 200, headers: { 'content-type': 'application/json' } });
   } catch (e) {
     return new Response(JSON.stringify({ remaining: null, error: String(e) }), { status: 500, headers: { 'content-type': 'application/json' } });
   }
