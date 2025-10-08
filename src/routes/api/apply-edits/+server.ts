@@ -16,6 +16,12 @@ export const POST: RequestHandler = async ({ request }) => {
       return new Response(JSON.stringify({ ok: false, reason: 'invalid_request' }), { status: 400 });
     }
 
+    // Validate token format
+    if (token.includes('api/token')) {
+      console.error('Invalid token format:', token);
+      return new Response(JSON.stringify({ ok: false, reason: 'invalid_token_format' }), { status: 400 });
+    }
+
     if (!fs.existsSync(storePath)) {
       console.error('Token store not found at:', storePath);
       return new Response(JSON.stringify({ ok: false, reason: 'token_store_not_found' }), { status: 500 });

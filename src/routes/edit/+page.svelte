@@ -17,7 +17,15 @@ let editsRemaining: number | null = null; // Track remaining edits
 let tokenValidated = false; // Track if the token is validated
 
 function normalizeFilled(arr: any[]) {
-  return arr.map((it: any) => (Array.isArray(it) ? { r: it[0], c: it[1], color: '#ec3750' } : it));
+  return arr.map((it: any) => {
+    if (Array.isArray(it) && it.length >= 2) {
+      return { r: it[0], c: it[1], color: it[2] || '#ec3750' };
+    }
+    if (it && typeof it === 'object' && 'r' in it && 'c' in it) {
+      return { r: it.r, c: it.c, color: it.color || '#ec3750' };
+    }
+    return null;
+  }).filter(Boolean);
 }
 
 function drawCanvas() {
@@ -43,7 +51,7 @@ function drawCanvas() {
   // draw existing filled
   const filled = normalizeFilled(canvasData.filled || []);
   for (const f of filled) {
-    ctx.fillStyle = f.color || '#ec3750';
+    ctx.fillStyle = f.color;
     ctx.fillRect(f.c * cellW, f.r * cellH, Math.ceil(cellW), Math.ceil(cellH));
   }
 
