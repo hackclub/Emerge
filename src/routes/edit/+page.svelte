@@ -74,6 +74,16 @@ onMount(async () => {
   canvasData = await res.json();
   rows = canvasData.rows || rows;
   cols = canvasData.cols || cols;
+  // fetch remaining count
+  try {
+    const rem = await fetch('/api/token_remaining');
+    if (rem.ok) {
+      const jr = await rem.json();
+      if (jr && typeof jr.remaining === 'number') {
+        message = `Edits remaining: ${jr.remaining}`;
+      }
+    }
+  } catch (e) {}
   // setup canvas context and resize observer
   if (canvasEl) {
     ctx = canvasEl.getContext('2d');
@@ -117,7 +127,7 @@ async function submitEdits() {
   const res = await fetch('/api/apply-edits', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ edits: queued })
+    body: JSON.stringify({ token, edits: queued })
   });
   const data = await res.json();
   if (data.ok) {
