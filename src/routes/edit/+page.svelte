@@ -1,5 +1,6 @@
 <script lang="ts">
 import { onMount, onDestroy } from 'svelte';
+import { readFile } from 'fs/promises';
 
 let message = '';
 let checking = false;
@@ -72,10 +73,15 @@ function mapPointerToCell(clientX: number, clientY: number) {
 
 
 onMount(async () => {
-  const res = await fetch('/data/coolify/applications/canvas.json');
-  canvasData = await res.json();
-  rows = canvasData.rows || rows;
-  cols = canvasData.cols || cols;
+  try {
+    const canvasData = JSON.parse(await readFile('/data/coolify/applications/canvas.json', 'utf-8'));
+    rows = canvasData.rows || rows;
+    cols = canvasData.cols || cols;
+    drawCanvas();
+  } catch (error) {
+    console.error('Failed to read canvas.json:', error);
+  }
+
   // setup canvas context and resize observer
   if (canvasEl) {
     ctx = canvasEl.getContext('2d');

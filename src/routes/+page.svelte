@@ -1,5 +1,6 @@
 <script lang="ts">
 import { onMount } from 'svelte';
+import { readFile } from 'fs/promises';
 
 type Cell = [number, number];
 type Highlight = { x: number; y: number } | null;
@@ -41,23 +42,20 @@ onMount(() => {
   let filled: FilledCell[] = [];
 
     try {
-      const res = await fetch('/data/coolify/applications/canvas.json');
-      if (res.ok) {
-        const data = await res.json();
-        rows = data.rows || rows;
-        cols = data.cols || cols;
-        // normalize filled entries: support legacy [r,c] arrays and new {r,c,color} objects
-        const raw = data.filled || [];
-        filled = raw.map((item: any) => {
-          if (Array.isArray(item) && item.length >= 2) {
-            return { r: Number(item[0]), c: Number(item[1]), color: '#ec3750' };
-          }
-          if (item && typeof item === 'object' && 'r' in item && 'c' in item) {
-            return { r: Number(item.r), c: Number(item.c), color: item.color || '#ec3750' };
-          }
-          return null;
-        }).filter(Boolean) as FilledCell[];
-      }
+      const canvasData = JSON.parse(await readFile('/data/coolify/applications/canvas.json', 'utf-8'));
+      rows = canvasData.rows || rows;
+      cols = canvasData.cols || cols;
+      // normalize filled entries: support legacy [r,c] arrays and new {r,c,color} objects
+      const raw = canvasData.filled || [];
+      filled = raw.map((item: any) => {
+        if (Array.isArray(item) && item.length >= 2) {
+          return { r: Number(item[0]), c: Number(item[1]), color: '#ec3750' };
+        }
+        if (item && typeof item === 'object' && 'r' in item && 'c' in item) {
+          return { r: Number(item.r), c: Number(item.c), color: item.color || '#ec3750' };
+        }
+        return null;
+      }).filter(Boolean) as FilledCell[];
     } catch (e) {
       console.warn('Could not load canvas.json', e);
       filled = [];
