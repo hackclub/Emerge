@@ -81,6 +81,8 @@ onMount(() => {
 
     function drawGrid(highlight: Highlight = null) {
       CTX.clearRect(0, 0, c.width, c.height);
+      CTX.fillStyle = '#f5f5f5'; // Pale white background
+      CTX.fillRect(0, 0, c.width, c.height);
       CTX.strokeStyle = '#ddd';
       for (let i = 0; i < rows; i++) {
         for (let j = 0; j < cols; j++) {

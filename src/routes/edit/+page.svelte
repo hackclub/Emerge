@@ -45,7 +45,7 @@ function drawCanvas() {
   const cellH = height / rowsN;
 
   // draw grid background
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = '#f5f5f5'; // Pale white background
   ctx.fillRect(0, 0, width, height);
 
   // draw existing filled
