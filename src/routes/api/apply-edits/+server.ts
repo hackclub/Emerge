@@ -17,24 +17,23 @@ export const POST: RequestHandler = async ({ request }) => {
     }
 
     if (!fs.existsSync(storePath)) {
+      console.error('Token store not found at:', storePath);
       return new Response(JSON.stringify({ ok: false, reason: 'token_store_not_found' }), { status: 500 });
     }
 
     const raw = fs.readFileSync(storePath, 'utf8');
     const store = JSON.parse(raw || '{}');
-    console.log('Received token:', token);
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
-    console.log('Computed token hash:', tokenHash);
-    console.log('Token store path:', storePath);
-    console.log('Token store content:', store);
     const entry = store[tokenHash];
 
     if (!entry) {
+      console.error('Invalid token. Hash:', tokenHash);
       return new Response(JSON.stringify({ ok: false, reason: 'invalid_token' }), { status: 403 });
     }
 
     if (entry.remaining < edits.length) {
-      return new Response(JSON.stringify({ ok: false, reason: 'not_enough_remaining' }), { status: 400 });
+      console.warn('Not enough remaining edits. Token hash:', tokenHash, 'Remaining:', entry.remaining, 'Requested:', edits.length);
+      return new Response(JSON.stringify({ ok: false, reason: 'not_enough_remaining', action: 'wipe_queue' }), { status: 400 });
     }
 
     // Apply edits to canvas
@@ -46,21 +45,34 @@ export const POST: RequestHandler = async ({ request }) => {
       else canvas.filled.push(e);
     }
 
-    // Update remaining edits
-    if (edits.length <= 45) {
-      entry.remaining = Math.max(0, entry.remaining - edits.length);
-    } else {
-      return new Response(JSON.stringify({ ok: false, reason: 'too_many_edits' }), { status: 400 });
-    }
+    console.log('Canvas before update:', canvas);
 
+    // Update remaining edits
+    entry.remaining = Math.max(0, entry.remaining - edits.length);
     store[tokenHash] = entry;
 
+    console.log('Token store before update:', store);
+
     // Write updates
-    fs.writeFileSync(canvasPath, JSON.stringify(canvas, null, 2));
-    fs.writeFileSync(storePath, JSON.stringify(store, null, 2));
+    try {
+      fs.writeFileSync(canvasPath, JSON.stringify(canvas, null, 2));
+      console.log('Canvas updated successfully at:', canvasPath);
+    } catch (e) {
+      console.error('Failed to update canvas. Error:', e);
+      return new Response(JSON.stringify({ ok: false, reason: 'canvas_update_failed', detail: String(e) }), { status: 500 });
+    }
+
+    try {
+      fs.writeFileSync(storePath, JSON.stringify(store, null, 2));
+      console.log('Token store updated successfully at:', storePath);
+    } catch (e) {
+      console.error('Failed to update token store. Error:', e);
+      return new Response(JSON.stringify({ ok: false, reason: 'token_store_update_failed', detail: String(e) }), { status: 500 });
+    }
 
     return new Response(JSON.stringify({ ok: true, remaining: entry.remaining }), { status: 200 });
   } catch (e) {
+    console.error('Server error:', e);
     return new Response(JSON.stringify({ ok: false, reason: 'server_error', detail: String(e) }), { status: 500 });
   }
 };
