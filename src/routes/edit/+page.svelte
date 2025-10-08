@@ -71,6 +71,8 @@ function mapPointerToCell(clientX: number, clientY: number) {
   return { r, c };
 }
 
+// Define the handler function in the appropriate scope
+let handler: (ev: PointerEvent) => void;
 
 onMount(async () => {
   try {
@@ -91,7 +93,7 @@ onMount(async () => {
     ro = new ResizeObserver(() => drawCanvas());
     ro.observe(canvasEl);
 
-    const handler = (ev: PointerEvent) => {
+    handler = (ev: PointerEvent) => {
       const cell = mapPointerToCell(ev.clientX, ev.clientY);
       if (!cell) return;
       if (ev.type === 'pointerdown') {
@@ -99,7 +101,8 @@ onMount(async () => {
         drawCanvas();
       }
     };
-    canvasEl.addEventListener('pointerdown', handler as any);
+
+    canvasEl.addEventListener('pointerdown', handler);
     // prevent default touch scrolling
     canvasEl.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
     // cleanup will be handled in top-level onDestroy
@@ -108,7 +111,7 @@ onMount(async () => {
 
 onDestroy(() => {
   if (canvasEl) {
-    canvasEl.removeEventListener('pointerdown', handler as any);
+    canvasEl.removeEventListener('pointerdown', handler);
     canvasEl.removeEventListener('touchstart', (e) => e.preventDefault());
   }
   if (ro && canvasEl) ro.unobserve(canvasEl);
