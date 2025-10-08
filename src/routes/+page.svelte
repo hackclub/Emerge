@@ -42,7 +42,9 @@ onMount(() => {
   let filled: FilledCell[] = [];
 
     try {
-      const canvasData = JSON.parse(await readFile('/data/coolify/applications/canvas.json', 'utf-8'));
+      const res = await fetch('/api/canvas');
+      if (!res.ok) throw new Error('Network response was not ok');
+      const canvasData = await res.json();
       rows = canvasData.rows || rows;
       cols = canvasData.cols || cols;
       // normalize filled entries: support legacy [r,c] arrays and new {r,c,color} objects
@@ -57,7 +59,7 @@ onMount(() => {
         return null;
       }).filter(Boolean) as FilledCell[];
     } catch (e) {
-      console.warn('Could not load canvas.json', e);
+      console.warn('Could not load canvas data', e);
       filled = [];
     }
 

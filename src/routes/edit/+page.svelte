@@ -74,12 +74,14 @@ function mapPointerToCell(clientX: number, clientY: number) {
 
 onMount(async () => {
   try {
-    const canvasData = JSON.parse(await readFile('/data/coolify/applications/canvas.json', 'utf-8'));
+    const res = await fetch('/api/canvas');
+    if (!res.ok) throw new Error('Network response was not ok');
+    const canvasData = await res.json();
     rows = canvasData.rows || rows;
     cols = canvasData.cols || cols;
     drawCanvas();
   } catch (error) {
-    console.error('Failed to read canvas.json:', error);
+    console.error('Failed to fetch canvas data:', error);
   }
 
   // setup canvas context and resize observer
