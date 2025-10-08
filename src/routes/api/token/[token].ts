@@ -6,9 +6,11 @@ import type { RequestHandler } from '@sveltejs/kit';
 
 const storePath = path.resolve('data/token_store.json');
 
-export const GET: RequestHandler = async ({ params }) => {
+export const GET: RequestHandler = async ({ params, request, url }) => {
   const token = params.token;
   const tokenHash = crypto.createHash('sha256').update(String(token)).digest('hex');
+  const provided = url.searchParams.get('secret') || request.headers.get('x-admin-secret');
+  const admin = process.env.ADMIN_SECRET;
   // Temporary fallback: accept this specific pre-generated token hash until
   // the deployed `data/token_store.json` is available and functioning.
   // REMOVE THIS BLOCK once the token store is confirmed working on the server.
@@ -17,12 +19,27 @@ export const GET: RequestHandler = async ({ params }) => {
     return new Response(JSON.stringify({ valid: true, remaining: 10, expires: null, note: 'temporary-fallback' }), { status: 200, headers: { 'content-type': 'application/json' } });
   }
   try {
-    const store = JSON.parse(fs.readFileSync(storePath, 'utf8'));
-    const entry = store[tokenHash];
+    const fileExists = fs.existsSync(storePath);
+    let store: Record<string, any> = {};
+    let entry: any = null;
+    if (fileExists) {
+      const raw = fs.readFileSync(storePath, 'utf8');
+      store = JSON.parse(raw || '{}');
+      entry = store[tokenHash];
+    }
+    // If admin requested diagnostics, return helpful debug info
+    if (admin && provided && provided === admin) {
+      return new Response(JSON.stringify({ debug: true, tokenHash, fileExists, storeSize: Object.keys(store).length, entry: entry || null }), { status: 200, headers: { 'content-type': 'application/json' } });
+    }
+    // normal flow
+    const entryFound = entry;
+    if (!entryFound) {
+      return new Response(JSON.stringify({ valid: false, reason: 'not found' }), { status: 404, headers: { 'content-type': 'application/json' } });
+    }
     if (!entry) {
       return new Response(JSON.stringify({ valid: false, reason: 'not found' }), { status: 404, headers: { 'content-type': 'application/json' } });
     }
-    if (entry.expires && Date.now() > entry.expires) {
+  if (entry.expires && Date.now() > entry.expires) {
       // Remove expired token
       delete store[tokenHash];
       fs.writeFileSync(storePath, JSON.stringify(store, null, 2));
