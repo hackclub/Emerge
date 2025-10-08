@@ -78,7 +78,7 @@ onMount(async () => {
   cols = canvasData.cols || cols;
   // fetch remaining count
   try {
-    const rem = await fetch('/api/token_remaining');
+    const rem = await fetch(`/api/token_remaining?token=${token}`); // Include token in query string
     if (rem.ok) {
       const jr = await rem.json();
       if (jr && typeof jr.remaining === 'number') {
