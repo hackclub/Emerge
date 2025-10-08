@@ -22,7 +22,11 @@ export const POST: RequestHandler = async ({ request }) => {
 
     const raw = fs.readFileSync(storePath, 'utf8');
     const store = JSON.parse(raw || '{}');
+    console.log('Received token:', token);
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    console.log('Computed token hash:', tokenHash);
+    console.log('Token store path:', storePath);
+    console.log('Token store content:', store);
     const entry = store[tokenHash];
 
     if (!entry) {
