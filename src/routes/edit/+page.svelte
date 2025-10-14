@@ -195,7 +195,7 @@ async function checkToken() {
 
 <div style="padding: 2rem; max-width: 800px; margin: 0 auto;">
   <h1>Edit Canvas</h1>
-  <p>Enter your one-time token and click "Check" to see how many edits you have.</p>
+  <p>Enter your token and click "Check" to see how many edits you have.</p>
   <div style="display:flex; gap: 1rem; align-items:center;">
     <input bind:value={token} placeholder="token" />
     <button on:click={checkToken} disabled={checking}>Check</button>
