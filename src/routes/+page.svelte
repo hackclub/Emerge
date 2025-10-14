@@ -506,6 +506,47 @@ table, th, td {
     </a>
 </div>
 
+
+<div style="flex: 1 1 300px; max-width: 300px; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.2);">
+    <a href="https://yanellaft.github.io/Emerge/" target="_blank" style="text-decoration: none; color: inherit;">
+        <img src="https://hc-cdn.hel1.your-objectstorage.com/s/v3/a9fa139b10f3c07cc4f34ec1e830c647f8a676d1_image.png" 
+             alt="Boids Demo" 
+             style="width: 100%; height: 200px; object-fit: cover; display: block;">
+        <div style="padding: 1rem; background-color: white;">
+            <h3 style="margin: 0; font-family: 'Phantom Sans', sans-serif;">Flocking Sim</h3>
+            <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; color: #555;">Boids with sliders to control behavior.</p>
+        </div>
+    </a>
+</div>
+
+<div style="flex: 1 1 300px; max-width: 300px; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.2);">
+    <a href="https://nb-starwind.pages.dev/" target="_blank" style="text-decoration: none; color: inherit;">
+        <img src="https://hc-cdn.hel1.your-objectstorage.com/s/v3/ec30b4e75ab5efed8e0bd704ca7578f6f5eee9e8_image.png" 
+             alt="Boids Demo" 
+             style="width: 100%; height: 200px; object-fit: cover; display: block;">
+        <div style="padding: 1rem; background-color: white;">
+            <h3 style="margin: 0; font-family: 'Phantom Sans', sans-serif;">Starwind</h3>
+            <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; color: #555;">Place your cursor on screen and see what emerges. </p>
+        </div>
+    </a>
+</div>
+
+
+
+<div style="flex: 1 1 300px; max-width: 300px; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.2);">
+    <a href="https://editor.p5js.org/Smiltent/sketches/_GW-PdXDg/" target="_blank" style="text-decoration: none; color: inherit;">
+        <img src="https://hc-cdn.hel1.your-objectstorage.com/s/v3/ec30b4e75ab5efed8e0bd704ca7578f6f5eee9e8_image.png" 
+             alt="Synchronising lights" 
+             style="width: 100%; height: 200px; object-fit: cover; display: block;">
+        <div style="padding: 1rem; background-color: white;">
+            <h3 style="margin: 0; font-family: 'Phantom Sans', sans-serif;">Emergent synchronisation</h3>
+            <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; color: #555;">Multiple lights trying to synchronize and flash at the same time</p>
+        </div>
+    </a>
+</div>
+
+
+
 <div style="flex: 1 1 300px; max-width: 300px; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.2);">
     <a href="https://editor.p5js.org/EuanRipper/sketches/jcCEwdaPH" target="_blank" style="text-decoration: none; color: inherit;">
         <img src="https://hc-cdn.hel1.your-objectstorage.com/s/v3/a2d07d44d8bc5cc3258c8fc7a13bec20847d0d6d_image.png" 
