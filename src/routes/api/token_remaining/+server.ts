@@ -18,22 +18,10 @@ export const GET: RequestHandler = async ({ url }) => {
       });
     }
 
-    console.log('Received token:', token);
-
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
-    console.log('Computed token hash:', tokenHash);
-    console.log('Token store path:', storePath);
-    console.log('Token store content:', fs.existsSync(storePath) ? fs.readFileSync(storePath, 'utf8') : 'File not found');
-
-    const debugInfo = {
-      receivedToken: token,
-      computedHash: tokenHash,
-      tokenStorePath: storePath,
-      tokenStoreContent: fs.existsSync(storePath) ? fs.readFileSync(storePath, 'utf8') : 'File not found',
-    };
 
     if (!fs.existsSync(storePath)) {
-      return new Response(JSON.stringify({ remaining: null, error: 'not_found', debug: debugInfo }), {
+      return new Response(JSON.stringify({ remaining: null, error: 'not_found' }), {
         status: 404,
         headers: {
           'content-type': 'application/json',
@@ -47,7 +35,7 @@ export const GET: RequestHandler = async ({ url }) => {
     const entry = store[tokenHash];
 
     if (!entry) {
-      return new Response(JSON.stringify({ remaining: null, error: 'not_found', debug: debugInfo }), {
+      return new Response(JSON.stringify({ remaining: null, error: 'not_found' }), {
         status: 404,
         headers: {
           'content-type': 'application/json',
@@ -56,7 +44,7 @@ export const GET: RequestHandler = async ({ url }) => {
       });
     }
 
-    return new Response(JSON.stringify({ remaining: entry.remaining, debug: debugInfo }), {
+    return new Response(JSON.stringify({ remaining: entry.remaining }), {
       status: 200,
       headers: {
         'content-type': 'application/json',
